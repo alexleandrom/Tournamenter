@@ -99,30 +99,49 @@ module.exports = function build(BUILD_PATH, assets, next){
     },
 
     // Concat and minify JS
+    // UglifyJS v3: requer objeto {filename: source} em vez de array de caminhos
     concatJs: (injectAssets, next) => {
       console.log(TAG, `concatJs`);
 
-      let assets = [...injectAssets.js];
+      const filesMap = {};
+      for (const filePath of injectAssets.js) {
+        try {
+          filesMap[path.basename(filePath)] = fs.readFileSync(filePath, 'utf8');
+        } catch (e) {
+          return next(new Error(`Failed to read JS file: ${filePath} — ${e.message}`));
+        }
+      }
 
-      var result = UglifyJS.minify(assets, {
-        outSourceMap: 'modules.js.map'
+      var result = UglifyJS.minify(filesMap, {
+        sourceMap: {
+          filename: 'modules.js',
+          url: 'modules.js.map',
+        }
       });
-      next(null, result)
+
+      if (result.error) return next(result.error);
+      next(null, result);
     },
 
     // Concat and minify CSS
     concatCss: (injectAssets, next) => {
-      console.log(TAG, `buildCss`)
+      console.log(TAG, `buildCss`);
       concat(injectAssets.css, DIR_CSS + BUILD_CSS, next);
     },
 
     // Minify CSS
+    // CleanCSS v5+: síncrono, sem callback; sourceMap retorna SourceMapGenerator
     minifyCss: (concatCss, next) => {
-      console.log(TAG, `minifyCss`)
+      console.log(TAG, `minifyCss`);
 
-      new CleanCSS({
-        sourceMap: true,
-      }).minify(fs.readFileSync(DIR_CSS + BUILD_CSS), next);
+      const input = fs.readFileSync(DIR_CSS + BUILD_CSS);
+      const output = new CleanCSS({ sourceMap: true }).minify(input);
+
+      if (output.errors && output.errors.length > 0) {
+        return next(new Error(output.errors.join('\n')));
+      }
+
+      next(null, output);
     },
 
     // Save JS to file
@@ -133,7 +152,10 @@ module.exports = function build(BUILD_PATH, assets, next){
       fs.writeFileSync(DIR_JS + BUILD_JS_MAP, concatJs.map);
 
       fs.writeFileSync(DIR_CSS + BUILD_CSS_MIN, minifyCss.styles);
-      fs.writeFileSync(DIR_CSS + BUILD_CSS_MIN_MAP, minifyCss.sourceMap);
+      // sourceMap pode ser SourceMapGenerator (objeto) em versões novas — converter para string
+      const cssMap = minifyCss.sourceMap;
+      fs.writeFileSync(DIR_CSS + BUILD_CSS_MIN_MAP,
+        typeof cssMap === 'string' ? cssMap : cssMap.toString());
 
       next();
     },
