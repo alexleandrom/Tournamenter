@@ -27,7 +27,7 @@
     "optimist": "^0.6.1",
     "sails-disk": "^0.10.10",
     "sails-memory": "^0.9.2",
-    "sails-mongo": "^1.0.0",
+    "sails-mongo": "^0.12.2",
     "uglify-js": "^3.17.0",
     "waterline": "^0.12.2",
     "winston": "^2.2.0"
@@ -56,5 +56,10 @@
     "type": "git",
     "url": "https://github.com/ivanseidel/tournamenter.git"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "overrides": {
+    "sails-mongo": {
+      "mongodb": "^3.7.3"
+    }
+  }
 }
