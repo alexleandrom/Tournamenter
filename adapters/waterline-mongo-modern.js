@@ -148,7 +148,8 @@ const adapter = module.exports = {
       .then(client => {
         const db = client.db();
         _connections[connection.identity] = { client, db };
-        console.log('[waterline-mongo-modern] Connected to MongoDB');
+        console.log('[waterline-mongo-modern] Connected to MongoDB, db:', db.databaseName);
+        console.log('[waterline-mongo-modern] Collections registered:', Object.keys(collections));
         cb();
       })
       .catch(err => {
@@ -183,14 +184,21 @@ const adapter = module.exports = {
     const skip   = options.skip  || 0;
     const limit  = options.limit || 0;
 
+    console.log('[waterline-mongo-modern] find', collName, JSON.stringify(filter));
     let cursor = db.collection(collName).find(filter);
     if (sort)  cursor = cursor.sort(sort);
     if (skip)  cursor = cursor.skip(skip);
     if (limit) cursor = cursor.limit(limit);
 
     cursor.toArray()
-      .then(docs => cb(null, docs.map(normalizeDoc)))
-      .catch(cb);
+      .then(docs => {
+        console.log('[waterline-mongo-modern] find result', collName, docs.length, 'docs');
+        cb(null, docs.map(normalizeDoc));
+      })
+      .catch(err => {
+        console.error('[waterline-mongo-modern] find error', collName, err.message);
+        cb(err);
+      });
   },
 
   create(connName, collName, values, cb) {
@@ -198,12 +206,17 @@ const adapter = module.exports = {
     // Don't store `id` — let MongoDB generate `_id`
     const { id, ...doc } = values;
 
+    console.log('[waterline-mongo-modern] create', collName, JSON.stringify(doc).slice(0, 120));
     db.collection(collName).insertOne(doc)
       .then(result => {
         doc._id = result.insertedId;
+        console.log('[waterline-mongo-modern] created', collName, doc._id.toString());
         cb(null, normalizeDoc(doc));
       })
-      .catch(cb);
+      .catch(err => {
+        console.error('[waterline-mongo-modern] create error', collName, err.message);
+        cb(err);
+      });
   },
 
   update(connName, collName, options, values, cb) {
