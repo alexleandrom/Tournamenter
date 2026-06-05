@@ -27,6 +27,10 @@ module.exports = function (app, next){
       default: _.defaults({adapter: 'default'}, app.config.connection),
     },
 
+    defaults: {
+      migrate: 'safe',
+    },
+
     collections,
   };
 
