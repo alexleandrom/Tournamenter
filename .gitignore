@@ -14,3 +14,7 @@ tmp/*
 !tmp/.gitkeep
 .tmp/
 .sass-cache/
+/.idea/misc.xml
+/.idea/modules.xml
+/.idea/Tournamenter.iml
+/.idea/vcs.xml
