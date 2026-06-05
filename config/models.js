@@ -17,10 +17,20 @@ module.exports = function (app, next){
     collections[k] = Waterline.Collection.extend(models[k]);
   }
 
+  // Use modern MongoDB adapter when DB_ADAPTER is sails-mongo or mongo,
+  // otherwise fall back to the configured adapter (sails-disk, etc.)
+  var adapterName = app.config.adapter || 'sails-disk';
+  var isMongoAdapter = adapterName === 'sails-mongo'
+    || adapterName === 'waterline-mongo-modern';
+
+  var resolvedAdapter = isMongoAdapter
+    ? require('../adapters/waterline-mongo-modern')
+    : require(adapterName);
+
   // Config used in this waterline instance
   var config = {
     adapters: {
-      'default': require(app.config.adapter)
+      'default': resolvedAdapter,
     },
 
     connections: {
