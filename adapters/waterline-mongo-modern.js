@@ -173,9 +173,18 @@ const adapter = module.exports = {
     }
   },
 
-  // ── DDL (no-ops for MongoDB) ───────────────────────────────────────────────
+  // ── DDL ───────────────────────────────────────────────────────────────────
 
-  describe(connName, collName, cb)              { cb(null, {}); },
+  // Waterline uses describe() to learn the schema, including the PK type.
+  // Without declaring `id` as a string here, Waterline falls back to integer
+  // and parseInt('6a23090b...') → NaN → null, breaking all findOne(pk) calls.
+  describe(connName, collName, cb) {
+    cb(null, {
+      id:        { type: 'string', primaryKey: true, unique: true },
+      createdAt: { type: 'datetime' },
+      updatedAt: { type: 'datetime' },
+    });
+  },
   define(connName, collName, definition, cb)    { cb(); },
   drop(connName, collName, relations, cb)        { cb(); },
 
