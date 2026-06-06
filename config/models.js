@@ -11,10 +11,16 @@ module.exports = function (app, next){
   var modelsDir = path.join(__dirname, '/../models');
   var models = app.helpers.loader.load(modelsDir);
 
-  // Convert to model object and load into waterline
+  // Convert to model object and load into waterline.
+  // Inject `id` as a string PK into every model that doesn't define it.
+  // Without this, Waterline defaults to integer PK and parseInt('6a...') → NaN → null,
+  // breaking all findOne(pk) lookups against MongoDB ObjectId strings.
   var collections = {};
   for(var k in models){
-    collections[k] = Waterline.Collection.extend(models[k]);
+    var model = _.cloneDeep(models[k]);
+    model.autoPK = false;
+    model.attributes = _.defaults({ id: { type: 'string', primaryKey: true } }, model.attributes || {});
+    collections[k] = Waterline.Collection.extend(model);
   }
 
   // Use modern MongoDB adapter when DB_ADAPTER is sails-mongo or mongo,

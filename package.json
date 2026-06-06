@@ -1,6 +1,6 @@
 {
   "name": "tournamenter",
-  "version": "2.4.3", 
+  "version": "2.4.3",
   "description": "Tournament Event Manager made easy",
   "bin": "./bin/tournamenter.js",
   "dependencies": {
@@ -23,17 +23,19 @@
     "fs-extra": "^0.30.0",
     "lodash": "^4.13.1",
     "method-override": "^2.3.6",
+    "mongodb": "^6.0.0",
     "morgan": "^1.7.0",
     "optimist": "^0.6.1",
     "sails-disk": "^0.10.10",
     "sails-memory": "^0.9.2",
-    "mongodb": "^6.0.0",
     "tournamenter-obr": "^2026.1.5",
     "uglify-js": "^3.17.0",
     "waterline": "^0.12.2",
     "winston": "^2.2.0"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "dotenv": "^17.4.2"
+  },
   "scripts": {
     "start": "node app.js",
     "debug": "node debug app.js",
