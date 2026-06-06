@@ -148,8 +148,7 @@ const adapter = module.exports = {
       .then(client => {
         const db = client.db();
         _connections[connection.identity] = { client, db };
-        console.log('[waterline-mongo-modern] Connected to MongoDB, db:', db.databaseName);
-        console.log('[waterline-mongo-modern] Collections registered:', Object.keys(collections));
+        console.log('[waterline-mongo-modern] Connected! db:', db.databaseName, '| collections:', Object.keys(collections).join(','));
         cb();
       })
       .catch(err => {
@@ -184,7 +183,7 @@ const adapter = module.exports = {
     const skip   = options.skip  || 0;
     const limit  = options.limit || 0;
 
-    console.log('[waterline-mongo-modern] find', collName, JSON.stringify(filter));
+    console.log('[waterline-mongo-modern] find', collName, 'where:', JSON.stringify(options.where), '→ filter:', JSON.stringify(filter));
     let cursor = db.collection(collName).find(filter);
     if (sort)  cursor = cursor.sort(sort);
     if (skip)  cursor = cursor.skip(skip);
