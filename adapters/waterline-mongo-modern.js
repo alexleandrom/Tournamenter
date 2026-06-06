@@ -136,7 +136,12 @@ function buildSort(sort) {
 const adapter = module.exports = {
   identity: 'waterline-mongo-modern',
   syncable: false,
-  defaults: {},
+  defaults: {
+    // Tell Waterline to use string PKs (like MongoDB ObjectId)
+    // Without this, Waterline casts string IDs to integer → NaN → null
+    pkFormat: 'string',
+    schema: false,
+  },
 
   // ── Connection ─────────────────────────────────────────────────────────────
 
